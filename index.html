@@ -1,26 +1,92 @@
+
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App - Login</title>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LeadConnect</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@^19.2.4",
-        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-        "react/": "https://esm.sh/react@^19.2.4/",
-        "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+    <style>
+      :root {
+        --radius: 0.65rem;
+        --background: oklch(1 0 0);
+        --foreground: oklch(0.141 0.005 285.823);
+        --card: oklch(1 0 0);
+        --card-foreground: oklch(0.141 0.005 285.823);
+        --popover: oklch(1 0 0);
+        --popover-foreground: oklch(0.141 0.005 285.823);
+        --primary: oklch(0.852 0.199 91.936);
+        --primary-foreground: oklch(0.421 0.095 57.708);
+        --secondary: oklch(0.967 0.001 286.375);
+        --secondary-foreground: oklch(0.21 0.006 285.885);
+        --muted: oklch(0.967 0.001 286.375);
+        --muted-foreground: oklch(0.552 0.016 285.938);
+        --accent: oklch(0.967 0.001 286.375);
+        --accent-foreground: oklch(0.21 0.006 285.885);
+        --destructive: oklch(0.577 0.245 27.325);
+        --border: oklch(0.92 0.004 286.32);
+        --input: oklch(0.92 0.004 286.32);
+        --ring: oklch(0.852 0.199 91.936);
+        --sidebar: oklch(0.985 0 0);
+        --sidebar-foreground: oklch(0.141 0.005 285.823);
+        --sidebar-primary: oklch(0.681 0.162 75.834);
+        --sidebar-primary-foreground: oklch(0.987 0.026 102.212);
+        --sidebar-accent: oklch(0.967 0.001 286.375);
+        --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+        --sidebar-border: oklch(0.92 0.004 286.32);
+        --sidebar-ring: oklch(0.852 0.199 91.936);
       }
-    }
-    </script>
+
+      body {
+        background-color: var(--background);
+        color: var(--foreground);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      /* Tailwind custom colors bridge */
+      .bg-background { background-color: var(--background); }
+      .text-foreground { color: var(--foreground); }
+      .bg-primary { background-color: var(--primary); }
+      .text-primary-foreground { color: var(--primary-foreground); }
+      .bg-secondary { background-color: var(--secondary); }
+      .text-secondary-foreground { color: var(--secondary-foreground); }
+      .bg-muted { background-color: var(--muted); }
+      .text-muted-foreground { color: var(--muted-foreground); }
+      .bg-card { background-color: var(--card); }
+      .text-card-foreground { color: var(--card-foreground); }
+      .border-border { border-color: var(--border); }
+      .border-input { border-color: var(--input); }
+      .bg-accent { background-color: var(--accent); }
+      .text-accent-foreground { color: var(--accent-foreground); }
+      .bg-sidebar { background-color: var(--sidebar); }
+      .text-sidebar-foreground { color: var(--sidebar-foreground); }
+      .border-sidebar-border { border-color: var(--sidebar-border); }
+
+      /* Animation for modals */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.2s ease-out forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "recharts": "https://esm.sh/recharts@^3.7.0"
+  }
+}
+</script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="antialiased">
+  <body>
     <div id="root"></div>
-    <script type="module" src="index.tsx"></script>
-<script type="module" src="/index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>
