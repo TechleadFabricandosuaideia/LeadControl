@@ -1,0 +1,21 @@
+services:
+  leadcontrol:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: leadcontrol
+    restart: unless-stopped
+    networks:
+      - proxy
+    env_file:
+      - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.leadcontrol.rule=Host(`seu-dominio.com.br`)" # Substitua pelo seu domínio
+      - "traefik.http.routers.leadcontrol.entrypoints=websecure"
+      - "traefik.http.routers.leadcontrol.tls.certresolver=myresolver"
+      - "traefik.http.services.leadcontrol.loadbalancer.server.port=80"
+
+networks:
+  proxy:
+    external: true

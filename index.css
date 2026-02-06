@@ -1,0 +1,12 @@
+/* Global styles for LeadControl */
+:root {
+  --primary-color: #f59e0b; /* From the logo/banner */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Add any other global styles here */
