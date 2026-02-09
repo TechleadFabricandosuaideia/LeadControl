@@ -22,6 +22,6 @@ for file in /usr/share/nginx/html/assets/*.js; do
   fi
 done
 
-echo "Injeção concluída. Iniciando Nginx..."
+echo "Injeção concluída. Passando comando para o entrypoint do Nginx..."
 
-exec "$@"
+exec /docker-entrypoint.sh "$@"
