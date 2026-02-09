@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Protege variáveis internas do Nginx (como $uri) de serem limpas pelo envsubst
-export NGINX_ENVSUBST_FILTER='${BASEROW_BASE_URL}'
+export NGINX_ENVSUBST_FILTER='BASEROW_BASE_URL'
 
 echo "Injecting environment variables..."
 
