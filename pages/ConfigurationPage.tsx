@@ -13,6 +13,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
+import { getBaserowBaseUrl } from '../apiConfig';
 
 interface BaserowUser {
   id: number;
@@ -57,7 +58,7 @@ const ConfigurationPage: React.FC = () => {
   const [inputModeLeads, setInputModeLeads] = useState<'structured' | 'raw'>('structured');
   const [inputModeContact, setInputModeContact] = useState<'structured' | 'raw'>('structured');
 
-  const baserowUrl = process.env.BASEROW_BASE_URL;
+  const baserowUrl = getBaserowBaseUrl();
   const token = process.env.BASEROW_WORKSPACE_TOKEN;
   const userTableId = process.env.USER_TABLE_ID;
   const configTableId = process.env.CONFIGURATION_TABLE_ID;

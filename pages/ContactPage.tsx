@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Send, FileInput, UserPlus, History, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { getBaserowBaseUrl, getHeaders } from '../apiConfig';
 
 interface BaserowConfig {
   id: number;
@@ -32,7 +33,7 @@ const ContactPage: React.FC = () => {
 
   // Environment variables
   const configTableId = process.env.CONFIGURATION_TABLE_ID;
-  const baserowBase = process.env.BASEROW_BASE_URL;
+  const baserowBase = getBaserowBaseUrl();
   const token = process.env.BASEROW_WORKSPACE_TOKEN;
 
   const handleSubmit = async (type: 'manual' | 'base') => {
@@ -58,22 +59,7 @@ const ContactPage: React.FC = () => {
       if (!contactConfig) throw new Error('Configuração CONTACT não encontrada');
 
       // 2. Parse headers
-      let headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-
-      if (contactConfig.headers) {
-        try {
-          const parsedHeaders = JSON.parse(contactConfig.headers);
-          if (Array.isArray(parsedHeaders)) {
-            parsedHeaders.forEach((h: { key: string, value: string }) => {
-              headers[h.key] = h.value;
-            });
-          }
-        } catch (e) {
-          console.error('Error parsing headers', e);
-        }
-      }
+      const headers = getHeaders(contactConfig.headers, token);
 
       // 3. Send data to n8n
       const payload = type === 'manual' ? manualForm : baseForm;

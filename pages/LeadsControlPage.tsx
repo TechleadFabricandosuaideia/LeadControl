@@ -13,6 +13,7 @@ import {
   Trash2,
   AlertCircle
 } from 'lucide-react';
+import { getBaserowBaseUrl, getHeaders } from '../apiConfig';
 
 interface BaserowConfig {
   id: number;
@@ -77,11 +78,11 @@ const LeadsControlPage: React.FC = () => {
       return null;
     }
     try {
-      const configRes = await fetch(`${baserowBase}/api/database/rows/table/${configTableId}/?user_field_names=true`, {
+      const response = await fetch(`${baserowBase}/api/database/rows/table/${configTableId}/?user_field_names=true`, {
         headers: { 'Authorization': `Token ${token}` }
       });
-      if (!configRes.ok) return null;
-      const configData = await configRes.json();
+      if (!response.ok) return null;
+      const configData = await response.json();
       return configData.results?.find((r: BaserowConfig) => r.aplicattionUse === 'LEADBASE');
     } catch (err) {
       console.error('Error fetching LeadBase config', err);
@@ -89,37 +90,6 @@ const LeadsControlPage: React.FC = () => {
     }
   };
 
-  const getCleanUrlAndHeaders = (config: BaserowConfig) => {
-    if (!config.baseUrl) return { baseUrl: '', headers: {} };
-
-    const cleanUrl = config.baseUrl.split('?')[0];
-    const baseUrl = cleanUrl.endsWith('/') ? cleanUrl : `${cleanUrl}/`;
-
-    let headers: Record<string, string> = {};
-    if (config.headers && config.headers.trim() !== '') {
-      try {
-        const parsed = JSON.parse(config.headers);
-        if (Array.isArray(parsed)) {
-          headers = parsed.reduce((acc: any, h: any) => ({ ...acc, [h.key]: h.value }), {});
-        }
-      } catch (e) {
-        console.warn('Failed to parse headers JSON', e);
-      }
-    }
-
-    // Process Authorization header to ensure 'Token ' prefix
-    const authKey = Object.keys(headers).find(k => k.toLowerCase() === 'authorization');
-    if (authKey) {
-      let val = headers[authKey];
-      if (val && !val.startsWith('Token ') && !val.startsWith('Bearer ') && !val.startsWith('JWT ')) {
-        headers[authKey] = `Token ${val}`;
-      }
-    } else {
-      headers['Authorization'] = `Token ${token}`;
-    }
-
-    return { baseUrl, headers };
-  };
 
   const fetchLeads = async () => {
     if (!configTableId || !baserowBase || !token) {
@@ -136,7 +106,9 @@ const LeadsControlPage: React.FC = () => {
         return;
       }
 
-      const { baseUrl, headers } = getCleanUrlAndHeaders(config);
+      const baseUrl = config.baseUrl?.split('?')[0];
+      const headers = getHeaders(config.headers, token);
+
       if (!baseUrl) {
         setError('URL base não configurada para a Base de Leads.');
         return;
@@ -145,7 +117,6 @@ const LeadsControlPage: React.FC = () => {
       const leadsRes = await fetch(`${baseUrl}?user_field_names=true`, {
         method: config.httpMetod || 'GET',
         headers: {
-          'Content-Type': 'application/json',
           ...headers
         }
       });
@@ -173,7 +144,9 @@ const LeadsControlPage: React.FC = () => {
       const config = await getLeadBaseConfig();
       if (!config) throw new Error('Configuração LEADBASE não encontrada');
 
-      const { baseUrl, headers } = getCleanUrlAndHeaders(config);
+      const baseUrl = config.baseUrl?.split('?')[0];
+      const headers = getHeaders(config.headers, token);
+
       const formData = new FormData(form);
       const data: any = {};
       formData.forEach((value, key) => { data[key] = value; });
@@ -183,7 +156,6 @@ const LeadsControlPage: React.FC = () => {
       const res = await fetch(url, {
         method: editMode ? 'PATCH' : 'POST',
         headers: {
-          'Content-Type': 'application/json',
           ...headers
         },
         body: JSON.stringify(data)

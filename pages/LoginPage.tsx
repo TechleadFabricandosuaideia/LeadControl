@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { getBaserowBaseUrl } from '../apiConfig';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      const baseUrl = process.env.BASEROW_BASE_URL;
+      const baseUrl = getBaserowBaseUrl();
       const tableId = process.env.USER_TABLE_ID;
       const token = process.env.BASEROW_WORKSPACE_TOKEN;
 

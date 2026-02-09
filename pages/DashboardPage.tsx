@@ -10,6 +10,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
+import { getBaserowBaseUrl, getHeaders } from '../apiConfig';
 import {
   BarChart,
   Bar,
@@ -65,7 +66,7 @@ const DashboardPage: React.FC = () => {
 
   // Environment variables
   const configTableId = process.env.CONFIGURATION_TABLE_ID;
-  const baserowBase = process.env.BASEROW_BASE_URL;
+  const baserowBase = getBaserowBaseUrl();
   const token = process.env.BASEROW_WORKSPACE_TOKEN;
 
   useEffect(() => {
@@ -91,26 +92,13 @@ const DashboardPage: React.FC = () => {
       if (!leadConfig) throw new Error('Configuração LEADBASE não encontrada');
 
       // 2. Parse headers
-      let headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (leadConfig.headers) {
-        try {
-          const parsed = JSON.parse(leadConfig.headers);
-          if (Array.isArray(parsed)) {
-            parsed.forEach((h: any) => { headers[h.key] = h.value; });
-          }
-        } catch (e) { }
-      }
-
-      // Ensure Token prefix
-      const authKey = Object.keys(headers).find(k => k.toLowerCase() === 'authorization');
-      if (authKey) {
-        if (!headers[authKey].startsWith('Token ')) headers[authKey] = `Token ${headers[authKey]}`;
-      } else {
-        headers['Authorization'] = `Token ${token}`;
-      }
+      const headers = getHeaders(leadConfig.headers, token);
 
       // 3. Fetch Leads
-      const leadsRes = await fetch(`${leadConfig.baseUrl.split('?')[0]}?user_field_names=true`, {
+      const baseUrl = leadConfig.baseUrl?.split('?')[0];
+      if (!baseUrl) throw new Error('URL base não configurada');
+
+      const leadsRes = await fetch(`${baseUrl}?user_field_names=true`, {
         method: leadConfig.httpMetod || 'GET',
         headers
       });
