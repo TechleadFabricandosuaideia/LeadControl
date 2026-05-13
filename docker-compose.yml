@@ -1,12 +1,15 @@
 services:
-  leadcontrol:
+  leadcontrol-frontend:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: leadcontrol
     restart: unless-stopped
+    ports:
+      - "8090:80"
     networks:
       - proxy
+      - internal
     env_file:
       - .env
     labels:
@@ -15,7 +18,25 @@ services:
       - "traefik.http.routers.leadcontrol.entrypoints=websecure"
       - "traefik.http.routers.leadcontrol.tls.certresolver=myresolver"
       - "traefik.http.services.leadcontrol.loadbalancer.server.port=80"
+    depends_on:
+      - leadcontrol-backend
+
+  leadcontrol-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: leadcontrol-api
+    restart: unless-stopped
+    networks:
+      - internal
+    volumes:
+      - leadcontrol_data:/app/data
 
 networks:
   proxy:
     external: true
+  internal:
+    driver: bridge
+
+volumes:
+  leadcontrol_data:

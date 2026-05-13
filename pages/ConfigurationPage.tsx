@@ -15,11 +15,10 @@ import {
 } from 'lucide-react';
 import { getBaserowBaseUrl } from '../apiConfig';
 
-interface BaserowUser {
+interface InternalUser {
   id: number;
   name: string;
   email: string;
-  passsword: string;
 }
 
 interface BaserowConfig {
@@ -39,7 +38,7 @@ const ConfigurationPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Users State
-  const [users, setUsers] = useState<BaserowUser[]>([]);
+  const [users, setUsers] = useState<InternalUser[]>([]);
 
   // API Config State
   const [leadsConfig, setLeadsConfig] = useState<Partial<BaserowConfig>>({
@@ -60,7 +59,6 @@ const ConfigurationPage: React.FC = () => {
 
   const baserowUrl = getBaserowBaseUrl();
   const token = process.env.BASEROW_WORKSPACE_TOKEN;
-  const userTableId = process.env.USER_TABLE_ID;
   const configTableId = process.env.CONFIGURATION_TABLE_ID;
 
   useEffect(() => {
@@ -72,15 +70,12 @@ const ConfigurationPage: React.FC = () => {
   }, [activeSection]);
 
   const fetchUsers = async () => {
-    if (!baserowUrl || !userTableId || !token) return;
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${baserowUrl}/api/database/rows/table/${userTableId}/?user_field_names=true`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
+      const response = await fetch('/api/auth/users');
       const data = await response.json();
-      setUsers(data.results || []);
+      setUsers(data || []);
     } catch (err) {
       setError('Erro ao carregar usuários.');
     } finally {
@@ -113,27 +108,23 @@ const ConfigurationPage: React.FC = () => {
 
   const handleUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!baserowUrl || !userTableId || !token) return;
 
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const userData = {
       name: formData.get('name'),
-      email: formData.get('email') || '', // Added default since it's used in login
-      passsword: formData.get('password'),
+      email: formData.get('email') || '',
+      password: formData.get('password'),
     };
 
     setLoading(true);
     try {
       const url = editMode
-        ? `${baserowUrl}/api/database/rows/table/${userTableId}/${editMode.id}/?user_field_names=true`
-        : `${baserowUrl}/api/database/rows/table/${userTableId}/?user_field_names=true`;
+        ? `/api/auth/users/${editMode.id}`
+        : '/api/auth/users';
 
       const response = await fetch(url, {
-        method: editMode ? 'PATCH' : 'POST',
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        },
+        method: editMode ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
 
@@ -148,13 +139,10 @@ const ConfigurationPage: React.FC = () => {
   };
 
   const deleteUser = async (id: number) => {
-    if (!baserowUrl || !userTableId || !token || !confirm('Deseja excluir este usuário?')) return;
+    if (!confirm('Deseja excluir este usuário?')) return;
     setLoading(true);
     try {
-      await fetch(`${baserowUrl}/api/database/rows/table/${userTableId}/${id}/`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Token ${token}` }
-      });
+      await fetch(`/api/auth/users/${id}`, { method: 'DELETE' });
       fetchUsers();
     } catch (err) {
       setError('Erro ao excluir usuário.');
@@ -548,7 +536,7 @@ const ConfigurationPage: React.FC = () => {
                     name="password"
                     type="password"
                     required
-                    defaultValue={editMode?.passsword || ''}
+                    defaultValue={''}
                     className="w-full px-4 py-2 pr-10 rounded-lg bg-background border border-input focus:ring-1 focus:ring-primary outline-none text-foreground"
                     placeholder="••••••••"
                   />

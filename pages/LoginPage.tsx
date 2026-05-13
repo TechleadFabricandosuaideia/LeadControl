@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { getBaserowBaseUrl } from '../apiConfig';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,53 +15,26 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      const baseUrl = getBaserowBaseUrl();
-      const tableId = process.env.USER_TABLE_ID;
-      const token = process.env.BASEROW_WORKSPACE_TOKEN;
-
-      if (!baseUrl || !tableId || !token) {
-        throw new Error('Configuração do servidor incompleta (variáveis de ambiente faltando).');
-      }
-
-      const response = await fetch(`${baseUrl}/api/database/rows/table/${tableId}/?user_field_names=true`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailOrName, password }),
       });
 
-      if (!response.ok) {
-        throw new Error('Falha ao conectar com o banco de dados. Verifique a configuração.');
-      }
-
       const data = await response.json();
-      const users = data.results || [];
 
-      // Primary check: email or name
-      const userMatch = users.find((u: any) =>
-        u.email?.toLowerCase() === emailOrName.toLowerCase() ||
-        u.name?.toLowerCase() === emailOrName.toLowerCase()
-      );
-
-      if (!userMatch) {
-        setError('Nome ou email incorreto.');
+      if (!response.ok) {
+        setError(data.error || 'Erro ao realizar login.');
         setLoading(false);
         return;
       }
 
-      // Secondary check: password
-      if (userMatch.passsword !== password) {
-        setError('Credenciais de login inválidas.');
-        setLoading(false);
-        return;
-      }
+      localStorage.setItem('leadcontrol_user', JSON.stringify(data.user));
 
-      // Successful login
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.message || 'Ocorreu um erro ao tentar realizar o login.');
+      setError('Ocorreu um erro ao tentar realizar o login.');
     } finally {
       setLoading(false);
     }

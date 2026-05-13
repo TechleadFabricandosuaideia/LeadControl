@@ -39,7 +39,16 @@ const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('leadcontrol_user') || '{}');
+    } catch {
+      return {};
+    }
+  })();
+
   const handleLogout = () => {
+    localStorage.removeItem('leadcontrol_user');
     navigate('/login');
   };
 
@@ -96,8 +105,8 @@ const Layout: React.FC = () => {
                 <Users size={16} />
               </div>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-medium truncate">Admin User</span>
-                <span className="text-xs text-muted-foreground truncate">admin@example.com</span>
+                <span className="text-sm font-medium truncate">{user.name || 'Admin User'}</span>
+                <span className="text-xs text-muted-foreground truncate">{user.email || 'admin@example.com'}</span>
               </div>
             </div>
             <button 
