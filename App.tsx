@@ -7,25 +7,28 @@ import LeadsControlPage from './pages/LeadsControlPage';
 import ContactPage from './pages/ContactPage';
 import ConfigurationPage from './pages/ConfigurationPage';
 import Layout from './components/Layout';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 const App: React.FC = () => {
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        
-        {/* Authenticated Routes wrapped in Layout */}
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/leadsControl" element={<LeadsControlPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/configuration" element={<ConfigurationPage />} />
-        </Route>
+    <ThemeProvider>
+      <HashRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Redirect root to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </HashRouter>
+          {/* Authenticated Routes wrapped in Layout */}
+          <Route element={<Layout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/leadsControl" element={<LeadsControlPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/configuration" element={<ConfigurationPage />} />
+          </Route>
+
+          {/* Redirect root to login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </HashRouter>
+    </ThemeProvider>
   );
 };
 

@@ -10,7 +10,6 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
-import { getBaserowBaseUrl, getHeaders } from '../apiConfig';
 import {
   BarChart,
   Bar,
@@ -23,15 +22,6 @@ import {
   Line,
   Cell
 } from 'recharts';
-
-interface BaserowConfig {
-  id: number;
-  aplicattionUse: string;
-  httpMetod: string;
-  baseUrl: string;
-  headers: string;
-  body: string;
-}
 
 const StatCard: React.FC<{
   title: string;
@@ -64,44 +54,13 @@ const DashboardPage: React.FC = () => {
   });
   const [chartData, setChartData] = useState<{ name: string; leads: number }[]>([]);
 
-  // Environment variables
-  const configTableId = process.env.CONFIGURATION_TABLE_ID;
-  const baserowBase = getBaserowBaseUrl();
-  const token = process.env.BASEROW_WORKSPACE_TOKEN;
-
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
-    if (!configTableId || !baserowBase || !token) {
-      setError('Configuração incompleta no arquivo .env.');
-      setLoading(false);
-      return;
-    }
-
     try {
-      // 1. Fetch LEADBASE configuration
-      const configRes = await fetch(`${baserowBase}/database/rows/table/${configTableId}/?user_field_names=true`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
-      if (!configRes.ok) throw new Error('Falha ao buscar configurações');
-
-      const configData = await configRes.json();
-      const leadConfig = configData.results?.find((r: BaserowConfig) => r.aplicattionUse === 'LEADBASE');
-      if (!leadConfig) throw new Error('Configuração LEADBASE não encontrada');
-
-      // 2. Parse headers
-      const headers = getHeaders(leadConfig.headers, token);
-
-      // 3. Fetch Leads
-      const baseUrl = leadConfig.baseUrl?.split('?')[0];
-      if (!baseUrl) throw new Error('URL base não configurada');
-
-      const leadsRes = await fetch(`${baseUrl}?user_field_names=true`, {
-        method: leadConfig.httpMetod || 'GET',
-        headers
-      });
+      const leadsRes = await fetch('/api/leads');
       if (!leadsRes.ok) throw new Error('Falha ao buscar leads');
 
       const leadsData = await leadsRes.json();
@@ -121,7 +80,7 @@ const DashboardPage: React.FC = () => {
       const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
       leads.forEach((lead: any) => {
-        const createdOn = lead['Created On'] || lead['created_on'];
+        const createdOn = lead['Created On'] || lead['created_on'] || lead['created_at'];
         if (createdOn) {
           const date = new Date(createdOn);
           if (!isNaN(date.getTime())) {

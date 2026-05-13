@@ -13,15 +13,18 @@ import {
   Trash2,
   AlertCircle
 } from 'lucide-react';
-import { getBaserowBaseUrl, getHeaders } from '../apiConfig';
 
-interface BaserowConfig {
+interface Lead {
   id: number;
-  aplicattionUse: string;
-  httpMetod: string;
-  baseUrl: string;
-  headers: string;
-  body: string;
+  company: string;
+  contact: string;
+  email?: string;
+  phone?: string;
+  status: string;
+  priority: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
@@ -58,75 +61,27 @@ const PriorityBadge: React.FC<{ priority: string }> = ({ priority }) => {
 const LeadsControlPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editMode, setEditMode] = useState<any>(null);
+  const [editMode, setEditMode] = useState<Lead | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Environment variables
-  const configTableId = process.env.CONFIGURATION_TABLE_ID;
-  const baserowBase = process.env.BASEROW_BASE_URL;
-  const token = process.env.BASEROW_WORKSPACE_TOKEN;
 
   useEffect(() => {
     fetchLeads();
   }, []);
 
-  const getLeadBaseConfig = async () => {
-    if (!configTableId || !baserowBase || !token) {
-      console.warn('Missing environment variables for Baserow configuration');
-      return null;
-    }
-    try {
-      const response = await fetch(`${baserowBase}/api/database/rows/table/${configTableId}/?user_field_names=true`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
-      if (!response.ok) return null;
-      const configData = await response.json();
-      return configData.results?.find((r: BaserowConfig) => r.aplicattionUse === 'LEADBASE');
-    } catch (err) {
-      console.error('Error fetching LeadBase config', err);
-      return null;
-    }
-  };
-
-
   const fetchLeads = async () => {
-    if (!configTableId || !baserowBase || !token) {
-      setError('Configuração incompleta no arquivo .env. Verifique CONFIGURATION_TABLE_ID, BASEROW_BASE_URL e BASEROW_WORKSPACE_TOKEN.');
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
-      const config = await getLeadBaseConfig();
-      if (!config) {
-        setError('Configuração LEADBASE não encontrada na tabela de configurações.');
-        return;
+      const res = await fetch('/api/leads');
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Erro HTTP ${res.status}`);
       }
 
-      const baseUrl = config.baseUrl?.split('?')[0];
-      const headers = getHeaders(config.headers, token);
-
-      if (!baseUrl) {
-        setError('URL base não configurada para a Base de Leads.');
-        return;
-      }
-
-      const leadsRes = await fetch(`${baseUrl}?user_field_names=true`, {
-        method: config.httpMetod || 'GET',
-        headers: {
-          ...headers
-        }
-      });
-
-      if (!leadsRes.ok) {
-        const errorData = await leadsRes.json().catch(() => ({}));
-        throw new Error(errorData.error || `Erro HTTP ${leadsRes.status}`);
-      }
-
-      const leadsData = await leadsRes.json();
+      const leadsData = await res.json();
       setLeads(leadsData.results || []);
     } catch (err: any) {
       setError(`Erro ao carregar leads: ${err.message || 'Falha na conexão'}`);
@@ -137,26 +92,20 @@ const LeadsControlPage: React.FC = () => {
 
   const handleLeadSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget; // Capture form before any await
+    const form = e.currentTarget;
     setLoading(true);
     setError(null);
     try {
-      const config = await getLeadBaseConfig();
-      if (!config) throw new Error('Configuração LEADBASE não encontrada');
-
-      const baseUrl = config.baseUrl?.split('?')[0];
-      const headers = getHeaders(config.headers, token);
-
       const formData = new FormData(form);
       const data: any = {};
       formData.forEach((value, key) => { data[key] = value; });
 
-      const url = editMode ? `${baseUrl}${editMode.id}/?user_field_names=true` : `${baseUrl}?user_field_names=true`;
+      const url = editMode ? `/api/leads/${editMode.id}` : '/api/leads';
 
       const res = await fetch(url, {
         method: editMode ? 'PATCH' : 'POST',
         headers: {
-          ...headers
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
       });
@@ -180,15 +129,8 @@ const LeadsControlPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const config = await getLeadBaseConfig();
-      if (!config) throw new Error('Configuração LEADBASE não encontrada');
-
-      const { baseUrl, headers } = getCleanUrlAndHeaders(config);
-      const res = await fetch(`${baseUrl}${id}/`, {
-        method: 'DELETE',
-        headers: {
-          ...headers
-        }
+      const res = await fetch(`/api/leads/${id}`, {
+        method: 'DELETE'
       });
 
       if (!res.ok) {

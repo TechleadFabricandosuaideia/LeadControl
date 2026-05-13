@@ -1,16 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Send, FileInput, UserPlus, History, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { getBaserowBaseUrl, getHeaders } from '../apiConfig';
-
-interface BaserowConfig {
-  id: number;
-  aplicattionUse: string;
-  httpMetod: string;
-  baseUrl: string;
-  headers: string;
-  body: string;
-}
 
 const ContactPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'manual' | 'base'>('manual');
@@ -31,58 +21,16 @@ const ContactPage: React.FC = () => {
     reason: ''
   });
 
-  // Environment variables
-  const configTableId = process.env.CONFIGURATION_TABLE_ID;
-  const baserowBase = getBaserowBaseUrl();
-  const token = process.env.BASEROW_WORKSPACE_TOKEN;
-
   const handleSubmit = async (type: 'manual' | 'base') => {
-    if (!configTableId || !baserowBase || !token) {
-      setStatus({ type: 'error', message: 'Configuração incompleta no .env' });
-      return;
-    }
-
     setLoading(true);
     setStatus(null);
-
     try {
-      // 1. Fetch configuration from Baserow
-      const configRes = await fetch(`${baserowBase}/database/rows/table/${configTableId}/?user_field_names=true`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
-
-      if (!configRes.ok) throw new Error('Falha ao buscar configurações');
-
-      const configData = await configRes.json();
-      const contactConfig = configData.results?.find((r: BaserowConfig) => r.aplicattionUse === 'CONTACT');
-
-      if (!contactConfig) throw new Error('Configuração CONTACT não encontrada');
-
-      // 2. Parse headers
-      const headers = getHeaders(contactConfig.headers, token);
-
-      // 3. Send data to n8n
-      const payload = type === 'manual' ? manualForm : baseForm;
-
-      const n8nRes = await fetch(contactConfig.baseUrl, {
-        method: contactConfig.httpMetod || 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      });
-
-      if (!n8nRes.ok) throw new Error('Falha ao enviar para o webhook');
-
-      setStatus({ type: 'success', message: 'Enviado com sucesso!' });
-
-      // Clear form
+      setStatus({ type: 'error', message: 'Integração de disparo ainda não configurada.' });
       if (type === 'manual') {
         setManualForm({ name: '', phone: '', email: '', reason: '' });
       } else {
         setBaseForm({ date: '', leadBase: '', reason: '' });
       }
-
-    } catch (err: any) {
-      setStatus({ type: 'error', message: err.message || 'Erro inesperado' });
     } finally {
       setLoading(false);
     }
