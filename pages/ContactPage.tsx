@@ -47,7 +47,7 @@ const ContactPage: React.FC = () => {
 
     try {
       // 1. Fetch configuration from Baserow
-      const configRes = await fetch(`${baserowBase}/api/database/rows/table/${configTableId}/?user_field_names=true`, {
+      const configRes = await fetch(`${baserowBase}/database/rows/table/${configTableId}/?user_field_names=true`, {
         headers: { 'Authorization': `Token ${token}` }
       });
 

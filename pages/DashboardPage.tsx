@@ -82,7 +82,7 @@ const DashboardPage: React.FC = () => {
 
     try {
       // 1. Fetch LEADBASE configuration
-      const configRes = await fetch(`${baserowBase}/api/database/rows/table/${configTableId}/?user_field_names=true`, {
+      const configRes = await fetch(`${baserowBase}/database/rows/table/${configTableId}/?user_field_names=true`, {
         headers: { 'Authorization': `Token ${token}` }
       });
       if (!configRes.ok) throw new Error('Falha ao buscar configurações');

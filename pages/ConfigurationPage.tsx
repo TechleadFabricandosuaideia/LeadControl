@@ -11,9 +11,13 @@ import {
   Lock,
   Phone,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Moon,
+  Sun,
+  Monitor
 } from 'lucide-react';
 import { getBaserowBaseUrl } from '../apiConfig';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface InternalUser {
   id: number;
@@ -31,7 +35,8 @@ interface BaserowConfig {
 }
 
 const ConfigurationPage: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<'users' | 'leads' | 'contact'>('users');
+  const { theme, setTheme } = useTheme();
+  const [activeSection, setActiveSection] = useState<'users' | 'leads' | 'contact' | 'theme'>('users');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -88,7 +93,7 @@ const ConfigurationPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${baserowUrl}/api/database/rows/table/${configTableId}/?user_field_names=true`, {
+      const response = await fetch(`${baserowUrl}/database/rows/table/${configTableId}/?user_field_names=true`, {
         headers: { 'Authorization': `Token ${token}` }
       });
       const data = await response.json();
@@ -159,8 +164,8 @@ const ConfigurationPage: React.FC = () => {
     try {
       const isUpdate = !!config.id;
       const url = isUpdate
-        ? `${baserowUrl}/api/database/rows/table/${configTableId}/${config.id}/?user_field_names=true`
-        : `${baserowUrl}/api/database/rows/table/${configTableId}/?user_field_names=true`;
+        ? `${baserowUrl}/database/rows/table/${configTableId}/${config.id}/?user_field_names=true`
+        : `${baserowUrl}/database/rows/table/${configTableId}/?user_field_names=true`;
 
       const payload = {
         ...config,
@@ -436,6 +441,12 @@ const ConfigurationPage: React.FC = () => {
         >
           <Globe size={18} /> Contato
         </button>
+        <button
+          onClick={() => setActiveSection('theme')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeSection === 'theme' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:bg-accent/50'}`}
+        >
+          <Sun size={18} /> Tema
+        </button>
       </div>
 
       {activeSection === 'users' && (
@@ -492,6 +503,83 @@ const ConfigurationPage: React.FC = () => {
 
       {activeSection === 'leads' && renderApiConfig('Base de Leads', 'LEADBASE', inputModeLeads, setInputModeLeads)}
       {activeSection === 'contact' && renderApiConfig('Contato', 'CONTACT', inputModeContact, setInputModeContact)}
+
+      {activeSection === 'theme' && (
+        <div className="bg-card border border-border rounded-xl p-6 space-y-6 animate-fade-in text-card-foreground">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold">Preferência de Tema</h3>
+              <p className="text-sm text-muted-foreground">Escolha como você prefere visualizar a aplicação.</p>
+            </div>
+            <Sun className="text-muted-foreground" size={24} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => setTheme('light')}
+              className={`p-6 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-3 ${
+                theme === 'light'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <Sun size={32} className={theme === 'light' ? 'text-primary' : 'text-muted-foreground'} />
+              <div className="text-center">
+                <p className="font-semibold text-foreground">Claro</p>
+                <p className="text-xs text-muted-foreground">Tema claro</p>
+              </div>
+              {theme === 'light' && (
+                <div className="mt-2 flex items-center gap-1 text-primary">
+                  <Check size={16} />
+                  <span className="text-xs font-medium">Ativo</span>
+                </div>
+              )}
+            </button>
+
+            <button
+              onClick={() => setTheme('dark')}
+              className={`p-6 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-3 ${
+                theme === 'dark'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <Moon size={32} className={theme === 'dark' ? 'text-primary' : 'text-muted-foreground'} />
+              <div className="text-center">
+                <p className="font-semibold text-foreground">Escuro</p>
+                <p className="text-xs text-muted-foreground">Tema escuro</p>
+              </div>
+              {theme === 'dark' && (
+                <div className="mt-2 flex items-center gap-1 text-primary">
+                  <Check size={16} />
+                  <span className="text-xs font-medium">Ativo</span>
+                </div>
+              )}
+            </button>
+
+            <button
+              onClick={() => setTheme('system')}
+              className={`p-6 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-3 ${
+                theme === 'system'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <Monitor size={32} className={theme === 'system' ? 'text-primary' : 'text-muted-foreground'} />
+              <div className="text-center">
+                <p className="font-semibold text-foreground">Sistema</p>
+                <p className="text-xs text-muted-foreground">Padrão do sistema</p>
+              </div>
+              {theme === 'system' && (
+                <div className="mt-2 flex items-center gap-1 text-primary">
+                  <Check size={16} />
+                  <span className="text-xs font-medium">Ativo</span>
+                </div>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* User Modal */}
       {isModalOpen && (
